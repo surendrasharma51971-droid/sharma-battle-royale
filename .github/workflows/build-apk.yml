@@ -1,66 +1,66 @@
 name: Build Sharma Battle Royale APK
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'sharma-battle-royale-project-fixed.zip'
+      - '.github/workflows/build-apk.yml'
 
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout repository
-uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-latest
 
-  - name: Set up Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: "17"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Set up Gradle
-    uses: gradle/actions/setup-gradle@v4
-    with:
-      gradle-version: "8.9"
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-  - name: Extract game project
-    run: |
-      mkdir -p project
-      unzip -q sharma-battle-royale-project-fixed.zip -d project
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
-  - name: Fix MainActivity.kt
-    shell: bash
-    run: |
-      FILE="project/sharma-battle-royale/app/src/main/java/in/sharma/battleroyale/MainActivity.kt"
-      mkdir -p "$(dirname "$FILE")"
-      cat > "$FILE" <<'EOF'
-      package `in`.sharma.battleroyale
+      - name: Extract project
+        run: |
+          unzip -q sharma-battle-royale-project-fixed.zip -d project
 
-      import android.app.Activity
-      import android.os.Bundle
-      import android.webkit.WebChromeClient
-      import android.webkit.WebView
-      import android.webkit.WebViewClient
+      - name: Fix MainActivity
+        run: |
+          FILE="project/sharma-battle-royale/app/src/main/java/in/sharma/battleroyale/MainActivity.kt"
+          mkdir -p "$(dirname "$FILE")"
+          cat > "$FILE" <<'EOF'
+          package `in`.sharma.battleroyale
 
-      class MainActivity : Activity() {
-          override fun onCreate(savedInstanceState: Bundle?) {
-              super.onCreate(savedInstanceState)
-              val webView = WebView(this)
-              webView.settings.javaScriptEnabled = true
-              webView.settings.domStorageEnabled = true
-              webView.webViewClient = WebViewClient()
-              webView.webChromeClient = WebChromeClient()
-              setContentView(webView)
-              webView.loadUrl("file:///android_asset/index.html")
+          import android.app.Activity
+          import android.os.Bundle
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+
+          class MainActivity : Activity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  val webView = WebView(this)
+                  webView.settings.javaScriptEnabled = true
+                  webView.webViewClient = WebViewClient()
+                  setContentView(webView)
+                  webView.loadUrl("file:///android_asset/index.html")
+              }
           }
-      }
-      EOF
+          EOF
 
-  - name: Build APK
-    working-directory: project/sharma-battle-royale
-    run: gradle assembleDebug
+      - name: Build APK
+        working-directory: project/sharma-battle-royale
+        run: gradle assembleDebug
 
-  - name: Upload APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: Sharma-Battle-Royale-APK
-      path: project/sharma-battle-royale/app/build/outputs/apk/debug/app-debug.apk
-      if-no-files-found: error
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sharma-Battle-Royale-APK
+          path: project/sharma-battle-royale/app/build/outputs/apk/debug/app-debug.apk
