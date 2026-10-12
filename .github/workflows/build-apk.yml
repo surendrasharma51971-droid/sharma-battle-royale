@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'sharma-battle-royale-project-1.zip'
+      - 'sharma-battle-royale-project-fixed.zip'
       - '.github/workflows/build-apk.yml'
 
 jobs:
@@ -27,8 +27,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Extract game project
-        run: |
-          unzip -q sharma-battle-royale-project-1.zip -d project
+        run: unzip -q sharma-battle-royale-project-fixed.zip -d project
 
       - name: Build APK
         working-directory: project/sharma-battle-royale
@@ -39,3 +38,4 @@ jobs:
         with:
           name: Sharma-Battle-Royale-APK
           path: project/sharma-battle-royale/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
